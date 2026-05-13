@@ -1,0 +1,85 @@
+name: Deploy Personal Site
+
+on:
+  push:
+    branches:
+      - personal/main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-personal-site
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Deploy over SSH
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/grtblog' }}
+          DEPLOY_BRANCH: personal/main
+          REPOSITORY: ${{ github.repository }}
+          REVISION: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${DEPLOY_HOST}" ] || [ -z "${DEPLOY_USER}" ] || [ -z "${DEPLOY_SSH_KEY}" ]; then
+            echo "Missing DEPLOY_HOST, DEPLOY_USER, or DEPLOY_SSH_KEY." >&2
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${DEPLOY_SSH_KEY}" > ~/.ssh/grtblog_deploy_key
+          chmod 600 ~/.ssh/grtblog_deploy_key
+          ssh-keyscan -H "${DEPLOY_HOST}" >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/grtblog_deploy_key "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "DEPLOY_PATH='${DEPLOY_PATH}' DEPLOY_BRANCH='${DEPLOY_BRANCH}' REPOSITORY='${REPOSITORY}' REVISION='${REVISION}' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          if ! command -v git >/dev/null 2>&1; then
+            echo "git is required on the server." >&2
+            exit 1
+          fi
+
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "docker is required on the server." >&2
+            exit 1
+          fi
+
+          if ! docker compose version >/dev/null 2>&1; then
+            echo "docker compose plugin is required on the server." >&2
+            exit 1
+          fi
+
+          mkdir -p "$(dirname "${DEPLOY_PATH}")"
+
+          if [ ! -d "${DEPLOY_PATH}/.git" ]; then
+            rm -rf "${DEPLOY_PATH}.tmp"
+            git clone --branch "${DEPLOY_BRANCH}" "https://github.com/${REPOSITORY}.git" "${DEPLOY_PATH}.tmp"
+            mv "${DEPLOY_PATH}.tmp" "${DEPLOY_PATH}"
+          fi
+
+          cd "${DEPLOY_PATH}"
+          git fetch origin "${DEPLOY_BRANCH}"
+          git reset --hard "${REVISION}"
+
+          cd deploy
+          if [ ! -f .env ]; then
+            echo "Missing ${DEPLOY_PATH}/deploy/.env. Create it on the server before deploying." >&2
+            exit 1
+          fi
+
+          mkdir -p storage/html storage/uploads storage/geoip
+          BUILD_COMMIT="${REVISION}" docker compose up -d --build
+          docker compose ps
+REMOTE
