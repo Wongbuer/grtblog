@@ -46,6 +46,16 @@ export type HomeHeroThemeConfig = {
 	socialsAlign?: HomeHeroAlignMode;
 };
 
+export type HomeFirstViewportVariant = 'grtblog' | 'yohaku';
+
+export type HomeFirstViewportThemeConfig = {
+	variant?: HomeFirstViewportVariant;
+	hideGlobalSidebarOnHome?: boolean;
+	hideGlobalMobileNavOnHome?: boolean;
+	showTopNav?: boolean;
+	showScrollHint?: boolean;
+};
+
 export type HomeActivityPulseThemeConfig = {
 	title?: string;
 	subtitle?: string;
@@ -122,6 +132,7 @@ export type HomeInspirationThemeConfig = {
 };
 
 export type HomeThemeConfig = {
+	firstViewport?: HomeFirstViewportThemeConfig;
 	hero?: HomeHeroThemeConfig;
 	activityPulse?: HomeActivityPulseThemeConfig;
 	inspiration?: HomeInspirationThemeConfig;

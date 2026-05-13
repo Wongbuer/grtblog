@@ -1,6 +1,8 @@
 import type { WebsiteInfoMap } from '$lib/features/website-info/types';
 import type {
 	HomeActivityPulseThemeConfig,
+	HomeFirstViewportThemeConfig,
+	HomeFirstViewportVariant,
 	HomeHeroAlignMode,
 	HomeHeroSocialLink,
 	HomeHeroTemplateNode,
@@ -14,6 +16,7 @@ import type {
 
 const allowedHeroTemplateTypes = new Set(['h1', 'span', 'code', 'br']);
 const allowedHeroAlignModes = new Set(['default', 'center']);
+const allowedFirstViewportVariants = new Set(['grtblog', 'yohaku']);
 const allowedInspirationIconNames = new Set([
 	'quote',
 	'code2',
@@ -45,6 +48,13 @@ const defaultHeroSocials: HomeHeroSocialLink[] = [
 ];
 
 const defaultThemeConfig: HomeThemeConfig = {
+	firstViewport: {
+		variant: 'grtblog',
+		hideGlobalSidebarOnHome: false,
+		hideGlobalMobileNavOnHome: false,
+		showTopNav: true,
+		showScrollHint: true
+	},
 	hero: {
 		avatarUrl: '',
 		description: 'Java & JavaScript full-stack developer committed to crafting excellent software.',
@@ -135,6 +145,28 @@ const toStringValue = (value: unknown): string | undefined => {
 	}
 	const trimmed = value.trim();
 	return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const toBooleanValue = (value: unknown): boolean | undefined => {
+	if (typeof value === 'boolean') {
+		return value;
+	}
+	const str = toStringValue(value)?.toLowerCase();
+	if (str === 'true') {
+		return true;
+	}
+	if (str === 'false') {
+		return false;
+	}
+	return undefined;
+};
+
+const parseFirstViewportVariant = (value: unknown): HomeFirstViewportVariant | undefined => {
+	const variant = toStringValue(value);
+	if (!variant || !allowedFirstViewportVariants.has(variant)) {
+		return undefined;
+	}
+	return variant as HomeFirstViewportVariant;
 };
 
 const parseHeroAlignMode = (value: unknown): HomeHeroAlignMode | undefined => {
@@ -306,6 +338,19 @@ const parseActivityPulse = (value: unknown): HomeActivityPulseThemeConfig | unde
 	};
 };
 
+const parseFirstViewport = (value: unknown): HomeFirstViewportThemeConfig | undefined => {
+	if (!isRecord(value)) {
+		return undefined;
+	}
+	return {
+		variant: parseFirstViewportVariant(value.variant),
+		hideGlobalSidebarOnHome: toBooleanValue(value.hideGlobalSidebarOnHome),
+		hideGlobalMobileNavOnHome: toBooleanValue(value.hideGlobalMobileNavOnHome),
+		showTopNav: toBooleanValue(value.showTopNav),
+		showScrollHint: toBooleanValue(value.showScrollHint)
+	};
+};
+
 const parseInspiration = (value: unknown): HomeInspirationThemeConfig | undefined => {
 	if (!isRecord(value)) {
 		return undefined;
@@ -363,11 +408,19 @@ export const resolveHomeThemeConfig = (
 	if (!isRecord(themeRaw)) {
 		return defaultThemeConfig;
 	}
-	const homeRoot = isRecord(themeRaw.home) ? themeRaw.home : themeRaw;
+	const homeRoot = {
+		...themeRaw,
+		...(isRecord(themeRaw.home) ? themeRaw.home : {})
+	};
+	const firstViewportRaw = isRecord(homeRoot.firstViewport) ? homeRoot.firstViewport : {};
 	const heroRaw = isRecord(homeRoot.hero) ? homeRoot.hero : {};
 	const activityRaw = isRecord(homeRoot.activityPulse) ? homeRoot.activityPulse : {};
 	const inspirationRaw = isRecord(homeRoot.inspiration) ? homeRoot.inspiration : {};
 	const parsedInspiration = parseInspiration(inspirationRaw);
+	const firstViewport = {
+		...defaultThemeConfig.firstViewport,
+		...parseFirstViewport(firstViewportRaw)
+	};
 
 	const hero = {
 		avatarUrl: toStringValue(heroRaw.avatarUrl) ?? defaultThemeConfig.hero?.avatarUrl,
@@ -445,6 +498,7 @@ export const resolveHomeThemeConfig = (
 	}
 
 	return {
+		firstViewport,
 		hero,
 		activityPulse: activity,
 		inspiration

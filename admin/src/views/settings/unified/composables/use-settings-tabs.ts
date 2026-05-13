@@ -7,6 +7,7 @@ import ApiTokensTab from '../components/tabs/ApiTokensTab.vue'
 import ContentTab from '../components/tabs/ContentTab.vue'
 import EmailTab from '../components/tabs/EmailTab.vue'
 import FederationTab from '../components/tabs/FederationTab.vue'
+import HomeFirstViewportTab from '../components/tabs/HomeFirstViewportTab.vue'
 import SecurityTab from '../components/tabs/SecurityTab.vue'
 import SiteInfoTab from '../components/tabs/SiteInfoTab.vue'
 import TelemetryTab from '../components/tabs/TelemetryTab.vue'
@@ -28,6 +29,12 @@ export const settingsTabs: SettingsTab[] = [
     label: '基本信息',
     icon: 'iconify ph--globe-hemisphere-west',
     component: SiteInfoTab,
+  },
+  {
+    key: 'home-first-viewport',
+    label: '首页首屏',
+    icon: 'iconify ph--house-line',
+    component: HomeFirstViewportTab,
   },
   {
     key: 'theme-extend',

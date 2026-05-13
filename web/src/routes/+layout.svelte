@@ -190,8 +190,24 @@
 	});
 
 	const websiteInfoStore = websiteInfoCtx.selectModelData((model) => model ?? null);
+	const homeTheme = $derived.by(() => resolveHomeThemeConfig($websiteInfoStore));
+	const isHomePage = $derived(page.url.pathname === '/' || page.url.pathname === '');
+	const useYohakuHome = $derived(isHomePage && homeTheme.firstViewport?.variant === 'yohaku');
+	const hideHomeDesktopSidebar = $derived(
+		useYohakuHome && homeTheme.firstViewport?.hideGlobalSidebarOnHome === true
+	);
+	const hideHomeMobileNav = $derived(
+		useYohakuHome && homeTheme.firstViewport?.hideGlobalMobileNavOnHome === true
+	);
+	const layoutPaddingClass = $derived(hideHomeDesktopSidebar ? '' : 'md:pl-24');
+	const pageWrapperClass = $derived.by(() => {
+		if (useYohakuHome || page.url.pathname.startsWith('/timeline')) {
+			return 'max-w-none px-0 py-0';
+		}
+		return 'max-w-300 px-4 sm:px-6 lg:px-8 py-10 md:py-16';
+	});
 	const avatarOrigin = $derived.by(() => {
-		const url = resolveHomeThemeConfig($websiteInfoStore).hero?.avatarUrl;
+		const url = homeTheme.hero?.avatarUrl;
 		if (!url) return null;
 		try {
 			return new URL(url).origin;
@@ -406,23 +422,23 @@
 	</script>
 </svelte:head>
 
-<div class="hidden md:block">
-	<Sidebar menuTree={data.navMenus ?? []} />
-</div>
-<MobileNavBar menuTree={data.navMenus ?? []} />
+{#if !hideHomeDesktopSidebar}
+	<div class="hidden md:block">
+		<Sidebar menuTree={data.navMenus ?? []} />
+	</div>
+{/if}
+{#if !hideHomeMobileNav}
+	<MobileNavBar menuTree={data.navMenus ?? []} />
+{/if}
 <!-- noise background -->
 <div class="bg-noise" aria-hidden="true"></div>
 
-<div class="md:pl-24 transition-[padding] duration-300 relative overflow-x-clip">
+<div class="{layoutPaddingClass} transition-[padding] duration-300 relative overflow-x-clip">
 	{#if $detailHeroBgSrc}
 		<DetailHeroBg src={$detailHeroBgSrc} />
 	{/if}
 	<SiteHealthBanner />
-	<main
-		class="page-wrapper mx-auto {page.url.pathname.startsWith('/timeline')
-			? 'max-w-none px-0 py-0'
-			: 'max-w-300 px-4 sm:px-6 lg:px-8 py-10 md:py-16'}"
-	>
+	<main class="page-wrapper mx-auto {pageWrapperClass}">
 		<div class="content-container min-h-[60vh]">
 			{@render children()}
 		</div>

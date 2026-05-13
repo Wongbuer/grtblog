@@ -4,6 +4,7 @@
 	import InspirationGrid from '$lib/features/home/InspirationGrid.svelte';
 	import SubscribeSection from '$lib/features/home/SubscribeSection.svelte';
 	import ActivityPulse from '$lib/features/home/ActivityPulse.svelte';
+	import YohakuFirstViewport from '$lib/features/home/YohakuFirstViewport.svelte';
 	import HomeArticleItem from '$lib/features/post/components/HomeArticleItem.svelte';
 	import HomeMomentItem from '$lib/features/moment/components/HomeMomentItem.svelte';
 	import { SlideIn, StaggerList } from '$lib/ui/animation';
@@ -11,12 +12,27 @@
 	import type { PageData } from './$types';
 
 	let { data } = $props<{ data: PageData }>();
+
+	const firstViewport = $derived(data.homeTheme?.firstViewport);
+	const useYohakuFirstViewport = $derived(firstViewport?.variant === 'yohaku');
+	const siteName = $derived(data.websiteInfo?.website_name ?? 'Blog');
+	const fallbackImage = $derived(data.websiteInfo?.favicon ?? '');
 </script>
 
 <div class="homepage-container">
-	<Hero config={data.homeTheme?.hero} />
+	{#if useYohakuFirstViewport}
+		<YohakuFirstViewport
+			config={data.homeTheme?.hero}
+			{firstViewport}
+			navMenus={data.navMenus ?? []}
+			{siteName}
+			{fallbackImage}
+		/>
+	{:else}
+		<Hero config={data.homeTheme?.hero} />
+	{/if}
 
-	<div class="max-w-300 mx-auto px-6 py-12 md:py-20">
+	<div id="home-content" class="max-w-300 mx-auto px-6 py-12 md:py-20">
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
 			<!-- Recent Articles -->
 			<section>
