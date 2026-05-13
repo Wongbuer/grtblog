@@ -24,7 +24,7 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/grtblog' }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
           DEPLOY_BRANCH: personal/main
           REPOSITORY: ${{ github.repository }}
           REVISION: ${{ github.sha }}
@@ -35,6 +35,7 @@ jobs:
             echo "Missing DEPLOY_HOST, DEPLOY_USER, or DEPLOY_SSH_KEY." >&2
             exit 1
           fi
+          DEPLOY_PATH="${DEPLOY_PATH:-/opt/grtblog}"
 
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
@@ -82,4 +83,4 @@ jobs:
           mkdir -p storage/html storage/uploads storage/geoip
           BUILD_COMMIT="${REVISION}" docker compose up -d --build
           docker compose ps
-REMOTE
+          REMOTE
