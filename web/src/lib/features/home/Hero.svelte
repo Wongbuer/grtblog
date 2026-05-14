@@ -32,7 +32,7 @@
 		hero_code_inline:
 			'font-medium mx-2 text-3xl rounded p-1 bg-gray-200 dark:bg-gray-800/0 hover:dark:bg-gray-800/100 bg-opacity-0 hover:bg-opacity-100 transition-colors duration-200',
 		hero_cursor:
-			'inline-block w-[1px] h-8 -bottom-2 relative bg-gray-800/80 dark:bg-gray-200/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200 animate-[hero-blink_1s_steps(1)_infinite]'
+			'home-hero-typewriter-cursor ml-1 inline-block font-mono font-light text-jade-500 dark:text-jade-300'
 	};
 
 	const titleTemplate = $derived(
@@ -50,6 +50,14 @@
 		config?.socials && config.socials.length > 0 ? config.socials : defaultSocials
 	);
 	const socialsAlign = $derived(config?.socialsAlign ?? 'default');
+
+	const splitCodeGlyphs = (text: string): Array<{ text: string; gapBefore: boolean }> => {
+		const chars = Array.from(text);
+		return chars.map((char, index) => ({
+			text: char,
+			gapBefore: char === '>' && chars[index - 1] === '/'
+		}));
+	};
 
 	function resolveNodeClass(node: HomeHeroTemplateNode): string {
 		const baseClass = node.type === 'h1' ? 'text-ink-900 dark:text-ink-100' : '';
@@ -87,7 +95,11 @@
 								<br />
 								<div class="mt-2 md:mt-4"></div>
 							{:else if node.type === 'code'}
-								<code class={resolveNodeClass(node)}>{node.text ?? ''}</code>
+								<code class={resolveNodeClass(node)}
+									>{#each splitCodeGlyphs(node.text ?? '') as glyph, glyphIdx (`desktop-${glyph.text}-${glyphIdx}`)}<span
+											class:home-hero-code-glyph-gap={glyph.gapBefore}>{glyph.text}</span
+										>{/each}</code
+								>
 							{:else if node.type === 'span'}
 								<span class={resolveNodeClass(node)}>{node.text ?? ''}</span>
 							{:else}
@@ -154,7 +166,11 @@
 						{#if node.type === 'br'}
 							<br />
 						{:else if node.type === 'code'}
-							<code class={resolveNodeClass(node)}>{node.text ?? ''}</code>
+							<code class={resolveNodeClass(node)}
+								>{#each splitCodeGlyphs(node.text ?? '') as glyph, glyphIdx (`mobile-${glyph.text}-${glyphIdx}`)}<span
+										class:home-hero-code-glyph-gap={glyph.gapBefore}>{glyph.text}</span
+									>{/each}</code
+							>
 						{:else if node.type === 'span'}
 							<span class={resolveNodeClass(node)}>{node.text ?? ''}</span>
 						{:else}
@@ -207,15 +223,22 @@
 		}
 	}
 
-	@keyframes hero-blink {
+	:global(.home-hero-typewriter-cursor) {
+		animation: home-hero-typewriter-cursor 2.4s ease-in-out infinite;
+	}
+
+	@keyframes -global-home-hero-typewriter-cursor {
 		0%,
-		49% {
-			opacity: 0;
-		}
-		50%,
 		100% {
 			opacity: 1;
 		}
+		55% {
+			opacity: 0.18;
+		}
+	}
+
+	.home-hero-code-glyph-gap {
+		margin-left: 0.12em;
 	}
 
 	:global(.hero-title-desktop h1) {

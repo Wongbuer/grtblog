@@ -47,6 +47,14 @@
 	const shouldOpenInNewTab = (href: string): boolean => isExternalHttpHref(href);
 	const isActiveNavItem = (href: string): boolean => href === '/' || href === '';
 
+	const splitCodeGlyphs = (text: string): Array<{ text: string; gapBefore: boolean }> => {
+		const chars = Array.from(text);
+		return chars.map((char, index) => ({
+			text: char,
+			gapBefore: char === '>' && chars[index - 1] === '/'
+		}));
+	};
+
 	const extractTitleText = (nodes: HomeHeroTemplateNode[] | undefined): string =>
 		(nodes ?? [])
 			.map((node) => (node.type === 'br' ? ' ' : (node.text ?? '')))
@@ -84,7 +92,7 @@
 		hero_code_inline:
 			'rounded-md border border-jade-500/25 bg-jade-50/80 px-2.5 py-1 font-mono text-[0.78em] font-semibold text-jade-700 shadow-subtle dark:border-jade-400/25 dark:bg-jade-400/10 dark:text-jade-200',
 		hero_cursor:
-			'inline-block h-[0.82em] w-px translate-y-[0.1em] bg-jade-500/70 dark:bg-jade-300/80'
+			'home-hero-typewriter-cursor ml-1 inline-block font-mono font-light text-jade-500 dark:text-jade-300'
 	};
 
 	function resolveTitleNodeClass(node: HomeHeroTemplateNode): string {
@@ -178,7 +186,11 @@
 							{#if node.type === 'br'}
 								<br />
 							{:else if node.type === 'code'}
-								<code class={resolveTitleNodeClass(node)}>{node.text ?? ''}</code>
+								<code class={resolveTitleNodeClass(node)}
+									>{#each splitCodeGlyphs(node.text ?? '') as glyph, glyphIdx (`${glyph.text}-${glyphIdx}`)}<span
+											class:home-hero-code-glyph-gap={glyph.gapBefore}>{glyph.text}</span
+										>{/each}</code
+								>
 							{:else}
 								<span class={resolveTitleNodeClass(node)}>{node.text ?? ''}</span>
 							{/if}
@@ -294,5 +306,23 @@
 
 	:global(.dark) .yohaku-first-viewport::after {
 		background: linear-gradient(to bottom, transparent, var(--color-ink-900));
+	}
+
+	:global(.home-hero-typewriter-cursor) {
+		animation: home-hero-typewriter-cursor 2.4s ease-in-out infinite;
+	}
+
+	@keyframes -global-home-hero-typewriter-cursor {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		55% {
+			opacity: 0.18;
+		}
+	}
+
+	.home-hero-code-glyph-gap {
+		margin-left: 0.12em;
 	}
 </style>

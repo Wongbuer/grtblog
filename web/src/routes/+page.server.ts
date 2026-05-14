@@ -2,13 +2,15 @@ import { getHomeActivityPulse, getHomeInspirationStats } from '$lib/features/hom
 import { resolveHomeThemeConfig } from '$lib/features/home/theme';
 import { getRecentPosts } from '$lib/features/post/api';
 import { getRecentMoments } from '$lib/features/moment/api';
+import { fetchWebsiteInfo } from '$lib/features/website-info/api';
 import { trackISRDeps } from '$lib/server/isr-deps';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	const { fetch } = event;
-	const parentData = await event.parent();
-	const homeTheme = resolveHomeThemeConfig(parentData.websiteInfo);
+	await event.parent();
+	const websiteInfo = await fetchWebsiteInfo(fetch);
+	const homeTheme = resolveHomeThemeConfig(websiteInfo);
 	const configuredRangeDays = homeTheme.activityPulse?.rangeDays;
 	const activityDays =
 		configuredRangeDays === 'all'
@@ -33,6 +35,7 @@ export const load: PageServerLoad = async (event) => {
 	]);
 
 	return {
+		websiteInfo,
 		recentPosts,
 		recentMoments,
 		activityPulse,

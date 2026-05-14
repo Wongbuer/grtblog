@@ -147,6 +147,13 @@ const toStringValue = (value: unknown): string | undefined => {
 	return trimmed.length > 0 ? trimmed : undefined;
 };
 
+const toTemplateTextValue = (value: unknown): string | undefined => {
+	if (typeof value !== 'string') {
+		return undefined;
+	}
+	return value;
+};
+
 const toBooleanValue = (value: unknown): boolean | undefined => {
 	if (typeof value === 'boolean') {
 		return value;
@@ -208,7 +215,7 @@ const parseHeroTemplate = (value: unknown): HomeHeroTemplateNode[] | undefined =
 		}
 		nodes.push({
 			type: typeRaw as HomeHeroTemplateNode['type'],
-			text: toStringValue(item.text),
+			text: toTemplateTextValue(item.text),
 			variant: toStringValue(item.variant),
 			className: toStringValue(item.className ?? item.class)
 		});
@@ -426,7 +433,8 @@ export const resolveHomeThemeConfig = (
 		avatarUrl: toStringValue(heroRaw.avatarUrl) ?? defaultThemeConfig.hero?.avatarUrl,
 		description: toStringValue(heroRaw.description) ?? defaultThemeConfig.hero?.description,
 		titleTemplate:
-			parseHeroTemplate(isRecord(heroRaw.title) ? heroRaw.title.template : heroRaw.titleTemplate) ??
+			parseHeroTemplate(heroRaw.titleTemplate) ??
+			parseHeroTemplate(isRecord(heroRaw.title) ? heroRaw.title.template : undefined) ??
 			defaultThemeConfig.hero?.titleTemplate,
 		mottoLines: parseStringList(heroRaw.mottoLines) ?? defaultThemeConfig.hero?.mottoLines,
 		mottoLinesAlign:

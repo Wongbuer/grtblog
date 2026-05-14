@@ -190,7 +190,8 @@
 	});
 
 	const websiteInfoStore = websiteInfoCtx.selectModelData((model) => model ?? null);
-	const homeTheme = $derived.by(() => resolveHomeThemeConfig($websiteInfoStore));
+	const currentWebsiteInfo = $derived.by(() => page.data.websiteInfo ?? $websiteInfoStore);
+	const homeTheme = $derived.by(() => resolveHomeThemeConfig(currentWebsiteInfo));
 	const isHomePage = $derived(page.url.pathname === '/' || page.url.pathname === '');
 	const useYohakuHome = $derived(isHomePage && homeTheme.firstViewport?.variant === 'yohaku');
 	const hideHomeDesktopSidebar = $derived(

@@ -206,12 +206,12 @@ function readTitleLines(template: unknown) {
   const line1 = readLineWithHighlight(firstLine)
   const line2 = readLineWithCode(secondLine)
   return {
-    titleLine1Prefix: line1.prefix || defaultForm.titleLine1Prefix,
-    titleLine1Highlight: line1.highlight || defaultForm.titleLine1Highlight,
-    titleLine1Suffix: line1.suffix || defaultForm.titleLine1Suffix,
-    titleLine2Prefix: line2.prefix || defaultForm.titleLine2Prefix,
-    titleCode: line2.code || defaultForm.titleCode,
-    titleLine2Suffix: line2.suffix || defaultForm.titleLine2Suffix,
+    titleLine1Prefix: line1.prefix,
+    titleLine1Highlight: line1.highlight,
+    titleLine1Suffix: line1.suffix,
+    titleLine2Prefix: line2.prefix,
+    titleCode: line2.code,
+    titleLine2Suffix: line2.suffix,
   }
 }
 
@@ -226,7 +226,7 @@ function normalizeHero(value: unknown): Partial<FirstViewportForm> {
           .filter(Boolean)
           .join('\n')
       : defaultForm.mottoText,
-    ...readTitleLines(isRecord(value.title) ? value.title.template : value.titleTemplate),
+    ...readTitleLines(value.titleTemplate ?? (isRecord(value.title) ? value.title.template : undefined)),
   }
 }
 
@@ -302,6 +302,7 @@ function buildNextThemeExtendInfo(): JsonRecord {
   hero.avatarUrl = form.avatarUrl.trim()
   hero.description = form.description.trim()
   hero.titleTemplate = buildTitleTemplate()
+  delete hero.title
   hero.mottoLines = buildMottoLines()
   home.hero = hero
   next.home = home

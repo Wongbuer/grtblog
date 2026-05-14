@@ -5,6 +5,7 @@
 	import SubscribeSection from '$lib/features/home/SubscribeSection.svelte';
 	import ActivityPulse from '$lib/features/home/ActivityPulse.svelte';
 	import YohakuFirstViewport from '$lib/features/home/YohakuFirstViewport.svelte';
+	import { resolveHomeThemeConfig } from '$lib/features/home/theme';
 	import HomeArticleItem from '$lib/features/post/components/HomeArticleItem.svelte';
 	import HomeMomentItem from '$lib/features/moment/components/HomeMomentItem.svelte';
 	import { SlideIn, StaggerList } from '$lib/ui/animation';
@@ -13,7 +14,8 @@
 
 	let { data } = $props<{ data: PageData }>();
 
-	const firstViewport = $derived(data.homeTheme?.firstViewport);
+	const homeTheme = $derived(resolveHomeThemeConfig(data.websiteInfo));
+	const firstViewport = $derived(homeTheme.firstViewport);
 	const useYohakuFirstViewport = $derived(firstViewport?.variant === 'yohaku');
 	const siteName = $derived(data.websiteInfo?.website_name ?? 'Blog');
 	const fallbackImage = $derived(data.websiteInfo?.favicon ?? '');
@@ -22,14 +24,14 @@
 <div class="homepage-container">
 	{#if useYohakuFirstViewport}
 		<YohakuFirstViewport
-			config={data.homeTheme?.hero}
+			config={homeTheme.hero}
 			{firstViewport}
 			navMenus={data.navMenus ?? []}
 			{siteName}
 			{fallbackImage}
 		/>
 	{:else}
-		<Hero config={data.homeTheme?.hero} />
+		<Hero config={homeTheme.hero} />
 	{/if}
 
 	<div id="home-content" class="max-w-300 mx-auto px-6 py-12 md:py-20">
@@ -94,10 +96,10 @@
 		</div>
 
 		<!-- New Inspiration Grid -->
-		<InspirationGrid config={data.homeTheme?.inspiration} stats={data.inspirationStats} />
+		<InspirationGrid config={homeTheme.inspiration} stats={data.inspirationStats} />
 
 		<!-- New Activity Pulse -->
-		<ActivityPulse pulse={data.activityPulse} config={data.homeTheme?.activityPulse} />
+		<ActivityPulse pulse={data.activityPulse} config={homeTheme.activityPulse} />
 
 		<!-- New Subscribe Section -->
 		<SubscribeSection />
