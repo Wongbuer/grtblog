@@ -26,7 +26,6 @@
 		<YohakuFirstViewport
 			config={homeTheme.hero}
 			{firstViewport}
-			navMenus={data.navMenus ?? []}
 			{siteName}
 			{fallbackImage}
 		/>

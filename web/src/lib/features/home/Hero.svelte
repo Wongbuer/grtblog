@@ -25,12 +25,12 @@
 	];
 
 	const variantClassMap: Record<string, string> = {
-		hero_h1_highlight: 'italic text-jade-600 dark:text-jade-400 font-light text-4xl',
-		hero_h1_primary: 'text-ink-900 dark:text-ink-100 font-medium text-4xl',
-		hero_h1_light: 'font-light text-4xl text-ink-900 dark:text-ink-100',
-		hero_h1_medium_gap: 'font-medium mx-2 text-4xl text-ink-900 dark:text-ink-100',
+		hero_h1_highlight: 'italic text-jade-600 dark:text-jade-400 font-light text-4xl lg:text-5xl',
+		hero_h1_primary: 'text-ink-900 dark:text-ink-100 font-semibold text-4xl lg:text-5xl',
+		hero_h1_light: 'font-light text-4xl lg:text-5xl text-ink-900 dark:text-ink-100',
+		hero_h1_medium_gap: 'font-medium mx-2 text-4xl lg:text-5xl text-ink-900 dark:text-ink-100',
 		hero_code_inline:
-			'font-medium mx-2 text-3xl rounded p-1 bg-gray-200 dark:bg-gray-800/0 hover:dark:bg-gray-800/100 bg-opacity-0 hover:bg-opacity-100 transition-colors duration-200',
+			'font-medium mx-2 rounded-md border border-ink-200/70 bg-white/50 px-2 py-0.5 text-[0.82em] text-ink-800 shadow-subtle transition-colors duration-200 hover:border-jade-300 hover:bg-jade-50/70 hover:text-jade-700 dark:border-ink-700/70 dark:bg-ink-800/20 dark:text-ink-100 dark:hover:border-jade-600/60 dark:hover:bg-jade-400/10 dark:hover:text-jade-200',
 		hero_cursor:
 			'home-hero-typewriter-cursor ml-1 inline-block font-mono font-light text-jade-500 dark:text-jade-300'
 	};
@@ -68,32 +68,35 @@
 </script>
 
 <div
-	class="hero-container min-h-[calc(100svh-5rem)] md:min-h-[calc(100svh-8rem)] flex flex-col justify-center w-full"
+	class="hero-container min-h-[calc(100svh-5rem)] md:min-h-[calc(100svh-7rem)] flex w-full flex-col justify-center"
 >
 	<!-- [Desktop Version] -->
-	<div class="hidden md:flex flex-col gap-20">
-		<div class="hero-info flex justify-center gap-36">
+	<div class="mx-auto hidden w-full max-w-6xl flex-col gap-16 px-8 md:flex">
+		<div class="hero-info flex items-center justify-center gap-16 lg:gap-24">
 			{#if avatarUrl}
 				<FadeIn y={24} duration={1000}>
 					<div class="hero-author-avatar relative z-10 w-fit">
+						<div
+							class="absolute inset-0 translate-x-3 translate-y-3 rounded-default border border-ink-200/80 dark:border-ink-800"
+						></div>
 						<img
 							src={avatarUrl}
 							alt="Author"
-							width="184"
-							height="184"
+							width="192"
+							height="192"
 							fetchpriority="high"
-							class="h-46 w-46 rounded-default object-cover shadow-sm ring-1 ring-ink-200 dark:ring-ink-700"
+							class="relative h-48 w-48 rounded-default object-cover shadow-float ring-1 ring-ink-200 dark:ring-ink-700"
 						/>
 					</div>
 				</FadeIn>
 			{/if}
 			<FadeIn y={20} duration={1000} delay={200}>
 				<div class="hero-welcome group">
-					<div class="hero-title-desktop font-mono leading-relaxed">
+					<div class="hero-title-desktop font-mono leading-[1.45]">
 						{#each titleTemplate as node, idx (`${node.type}-${node.text ?? ''}-${idx}`)}
 							{#if node.type === 'br'}
 								<br />
-								<div class="mt-2 md:mt-4"></div>
+								<div class="mt-3"></div>
 							{:else if node.type === 'code'}
 								<code class={resolveNodeClass(node)}
 									>{#each splitCodeGlyphs(node.text ?? '') as glyph, glyphIdx (`desktop-${glyph.text}-${glyphIdx}`)}<span
@@ -107,17 +110,17 @@
 							{/if}
 						{/each}
 					</div>
-					<p class="hero-subtitle mt-12 font-mono text-ink-500">
+					<p class="hero-subtitle mt-8 max-w-xl font-mono text-sm leading-7 text-ink-500">
 						{description}
 					</p>
 				</div>
 			</FadeIn>
 		</div>
 
-		<div class="flex flex-col gap-12 ml-4">
+		<div class="mx-auto flex w-full max-w-5xl flex-col gap-10">
 			<FadeIn y={16} duration={900} delay={400}>
 				<div
-					class="hero-motto font-serif text-2xl leading-relaxed text-ink-800 dark:text-ink-200"
+					class="hero-motto font-serif text-[1.45rem] leading-loose text-ink-800 dark:text-ink-200"
 					class:text-center={mottoLinesAlign === 'center'}
 				>
 					{#each mottoLines as line, lineIdx (`${line}-${lineIdx}`)}
@@ -128,7 +131,7 @@
 
 			<FadeIn y={12} duration={800} delay={600}>
 				<div
-					class="social-container flex items-center gap-6"
+					class="social-container flex items-center gap-5"
 					class:justify-center={socialsAlign === 'center'}
 				>
 					{#each socials as social, socialIdx (`${social.icon}-${social.href}-${socialIdx}`)}
@@ -140,7 +143,7 @@
 	</div>
 
 	<!-- [Mobile Version] -->
-	<div class="flex md:hidden flex-col items-center pt-8">
+	<div class="flex flex-col items-center pt-8 md:hidden">
 		{#if avatarUrl}
 			<FadeIn y={15} duration={1000}>
 				<div class="relative mb-10">
@@ -161,7 +164,7 @@
 
 		<FadeIn y={10} duration={1000} delay={200}>
 			<div class="text-center px-6 group">
-				<div class="hero-title-mobile font-mono tracking-tight leading-relaxed">
+				<div class="hero-title-mobile font-mono leading-relaxed tracking-normal">
 					{#each titleTemplate as node, idx (`mobile-${node.type}-${node.text ?? ''}-${idx}`)}
 						{#if node.type === 'br'}
 							<br />
@@ -178,7 +181,7 @@
 						{/if}
 					{/each}
 				</div>
-				<p class="text-[11px] font-mono text-ink-500 leading-relaxed mt-4">
+				<p class="mt-5 text-[11px] font-mono leading-relaxed text-ink-500">
 					{description}
 				</p>
 			</div>

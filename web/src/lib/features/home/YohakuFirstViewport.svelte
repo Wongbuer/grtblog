@@ -2,8 +2,7 @@
 	import { resolveHref } from '$lib/shared/utils/resolve-path';
 	import { FadeIn } from '$lib/ui/animation';
 	import DynamicLucideIcon from '$lib/ui/icons/DynamicLucideIcon.svelte';
-	import { ArrowDown, UserRound } from 'lucide-svelte';
-	import type { NavMenuItem } from '$lib/features/navigation/types';
+	import { ArrowDown } from 'lucide-svelte';
 	import type {
 		HomeFirstViewportThemeConfig,
 		HomeHeroSocialLink,
@@ -14,13 +13,11 @@
 	let {
 		config,
 		firstViewport,
-		navMenus = [],
 		siteName = 'Blog',
 		fallbackImage = ''
 	}: {
 		config?: HomeHeroThemeConfig;
 		firstViewport?: HomeFirstViewportThemeConfig;
-		navMenus?: NavMenuItem[];
 		siteName?: string;
 		fallbackImage?: string;
 	} = $props();
@@ -45,7 +42,6 @@
 	const isExternalHttpHref = (href: string): boolean => /^(https?:|\/\/)/i.test(href);
 	const normalizeHref = (href: string): string => (href.startsWith('/') ? resolveHref(href) : href);
 	const shouldOpenInNewTab = (href: string): boolean => isExternalHttpHref(href);
-	const isActiveNavItem = (href: string): boolean => href === '/' || href === '';
 
 	const splitCodeGlyphs = (text: string): Array<{ text: string; gapBefore: boolean }> => {
 		const chars = Array.from(text);
@@ -78,19 +74,15 @@
 	const socials = $derived(
 		config?.socials && config.socials.length > 0 ? config.socials : defaultSocials
 	);
-	const showTopNav = $derived(firstViewport?.showTopNav ?? true);
 	const showScrollHint = $derived(firstViewport?.showScrollHint ?? true);
-	const navItems = $derived.by(() =>
-		(navMenus ?? []).filter((item) => item.name && item.url).slice(0, 6)
-	);
 
 	const titleVariantClassMap: Record<string, string> = {
-		hero_h1_highlight: 'text-jade-600 dark:text-jade-300',
-		hero_h1_primary: 'text-ink-900 dark:text-ink-100',
+		hero_h1_highlight: 'font-medium text-jade-600 dark:text-jade-300',
+		hero_h1_primary: 'font-medium text-ink-900 dark:text-ink-100',
 		hero_h1_light: 'font-light text-ink-800 dark:text-ink-200',
 		hero_h1_medium_gap: 'mx-1 font-medium text-ink-900 dark:text-ink-100',
 		hero_code_inline:
-			'rounded-md border border-jade-500/25 bg-jade-50/80 px-2.5 py-1 font-mono text-[0.78em] font-semibold text-jade-700 shadow-subtle dark:border-jade-400/25 dark:bg-jade-400/10 dark:text-jade-200',
+			'ml-2 rounded-lg border border-jade-500/18 bg-white/80 px-2.5 py-1 font-mono text-[0.76em] font-medium text-jade-700 shadow-subtle dark:border-jade-400/20 dark:bg-jade-400/10 dark:text-jade-200 sm:ml-3',
 		hero_cursor:
 			'home-hero-typewriter-cursor ml-1 inline-block font-mono font-light text-jade-500 dark:text-jade-300'
 	};
@@ -107,63 +99,11 @@
 	<div
 		class="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col px-5 sm:px-8 lg:px-10"
 	>
-		<header class="relative flex min-h-20 items-center gap-4 py-4 sm:py-5">
-			<a
-				href={resolveHref('/')}
-				class="group hidden min-w-0 items-center gap-3 text-ink-900 sm:flex dark:text-ink-100"
-				aria-label={titleText}
-			>
-				<span
-					class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-ink-200 bg-white text-sm font-semibold text-ink-700 shadow-subtle dark:border-ink-700 dark:bg-ink-800 dark:text-ink-100"
-				>
-					{#if avatarUrl}
-						<img src={avatarUrl} alt="" width="40" height="40" class="h-full w-full object-cover" />
-					{:else}
-						{siteInitial}
-					{/if}
-				</span>
-			</a>
-
-			{#if showTopNav && navItems.length > 0}
-				<nav
-					class="absolute left-1/2 top-1/2 hidden max-w-[68vw] -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-default border border-ink-200/70 bg-white/55 p-1 shadow-subtle backdrop-blur-xl md:flex dark:border-ink-800/90 dark:bg-ink-900/60"
-					aria-label="首页导航"
-				>
-					{#each navItems as item (item.id)}
-						<a
-							href={normalizeHref(item.url)}
-							target={shouldOpenInNewTab(item.url) ? '_blank' : undefined}
-							rel={shouldOpenInNewTab(item.url) ? 'noopener noreferrer' : undefined}
-							class="flex h-9 items-center gap-2 rounded-default px-3 text-sm font-semibold transition-colors {isActiveNavItem(
-								item.url
-							)
-								? 'bg-ink-900 text-white dark:bg-ink-100 dark:text-ink-950'
-								: 'text-ink-600 hover:bg-ink-100 hover:text-ink-950 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-ink-50'}"
-						>
-							{#if item.icon}
-								<DynamicLucideIcon name={item.icon} size={16} />
-							{/if}
-							<span>{item.name}</span>
-						</a>
-					{/each}
-				</nav>
-			{/if}
-
-			<div class="ml-auto hidden sm:block">
-				<div
-					class="flex h-10 w-10 items-center justify-center rounded-full border border-ink-200/70 bg-white/50 text-ink-500 shadow-subtle dark:border-ink-800 dark:bg-ink-900/50 dark:text-ink-400"
-					aria-hidden="true"
-				>
-					<UserRound size={16} />
-				</div>
-			</div>
-		</header>
-
-		<main class="flex flex-1 flex-col items-center justify-center py-10 text-center sm:py-12">
+		<main class="flex flex-1 flex-col items-center justify-center py-24 text-center sm:py-28">
 			<FadeIn y={18} duration={900}>
 				<div class="flex flex-col items-center">
 					<div
-						class="mb-9 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-ink-200 bg-white text-3xl font-semibold text-ink-700 shadow-float dark:border-ink-700 dark:bg-ink-800 dark:text-ink-100"
+						class="mb-8 flex h-22 w-22 items-center justify-center overflow-hidden rounded-full border border-ink-200/80 bg-white/90 text-3xl font-semibold text-ink-700 shadow-subtle dark:border-ink-700/80 dark:bg-ink-800 dark:text-ink-100 sm:h-24 sm:w-24"
 					>
 						{#if avatarUrl}
 							<img
@@ -180,7 +120,7 @@
 					</div>
 
 					<div
-						class="yohaku-title max-w-5xl font-sans text-4xl font-medium leading-[1.22] text-ink-800 sm:text-5xl lg:text-6xl dark:text-ink-200"
+						class="yohaku-title max-w-4xl font-sans text-[2rem] font-medium leading-[1.3] text-ink-800 sm:text-[2.65rem] sm:leading-[1.24] lg:text-[2.95rem] dark:text-ink-200"
 					>
 						{#each titleTemplate as node, idx (`${node.type}-${node.text ?? ''}-${idx}`)}
 							{#if node.type === 'br'}
@@ -199,13 +139,13 @@
 
 					{#if description}
 						<p
-							class="mt-7 max-w-2xl text-xs font-medium uppercase leading-7 tracking-[0.16em] text-ink-500 sm:text-sm dark:text-ink-500"
+							class="mt-7 max-w-2xl text-xs font-medium uppercase leading-7 tracking-[0.14em] text-ink-500 sm:text-[13px] dark:text-ink-500"
 						>
 							{description}
 						</p>
 					{/if}
 
-					<div class="mt-32 text-sm text-ink-400 dark:text-ink-500">
+					<div class="mt-24 text-sm text-ink-400 dark:text-ink-500 sm:mt-28">
 						{#if mottoLines.length > 0}
 							<div class="font-serif italic">
 								{#each mottoLines as line, index (`${line}-${index}`)}
@@ -219,26 +159,8 @@
 			</FadeIn>
 		</main>
 
-		{#if showTopNav && navItems.length > 0}
-			<nav class="flex flex-wrap justify-center gap-2 pb-5 md:hidden" aria-label="首页导航">
-				{#each navItems.slice(0, 4) as item (item.id)}
-					<a
-						href={normalizeHref(item.url)}
-						target={shouldOpenInNewTab(item.url) ? '_blank' : undefined}
-						rel={shouldOpenInNewTab(item.url) ? 'noopener noreferrer' : undefined}
-						class="flex h-9 items-center gap-1.5 rounded-full border border-ink-200 bg-white/70 px-3 text-xs font-medium text-ink-600 dark:border-ink-700 dark:bg-ink-900/70 dark:text-ink-300"
-					>
-						{#if item.icon}
-							<DynamicLucideIcon name={item.icon} size={13} />
-						{/if}
-						<span>{item.name}</span>
-					</a>
-				{/each}
-			</nav>
-		{/if}
-
 		<FadeIn y={8} duration={700} delay={240} class="pb-8">
-			<div class="flex flex-wrap justify-center gap-4">
+			<div class="flex flex-wrap justify-center gap-3">
 				{#each socials as social, index (`${social.icon}-${social.href}-${index}`)}
 					<a
 						href={normalizeHref(social.href)}
@@ -246,7 +168,7 @@
 						rel={shouldOpenInNewTab(social.href) ? 'noopener noreferrer' : undefined}
 						title={social.name || social.icon}
 						aria-label={social.name || social.icon}
-						class="flex h-11 w-11 items-center justify-center rounded-full border border-ink-300/80 bg-white/35 text-ink-500 shadow-subtle backdrop-blur-sm transition-colors hover:border-jade-400 hover:bg-jade-50 hover:text-jade-700 dark:border-ink-700 dark:bg-ink-900/35 dark:text-ink-400 dark:hover:border-jade-500/70 dark:hover:bg-jade-400/10 dark:hover:text-jade-200"
+						class="flex h-10 w-10 items-center justify-center rounded-full border border-ink-300/70 bg-white/45 text-ink-500 shadow-subtle backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-jade-400 hover:bg-jade-50 hover:text-jade-700 dark:border-ink-700 dark:bg-ink-900/35 dark:text-ink-400 dark:hover:border-jade-500/70 dark:hover:bg-jade-400/10 dark:hover:text-jade-200"
 					>
 						<DynamicLucideIcon name={social.icon} size={16} />
 					</a>
@@ -278,11 +200,13 @@
 		position: absolute;
 		inset: 0;
 		z-index: -2;
-		background-image:
-			linear-gradient(rgba(28, 25, 23, 0.035) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(28, 25, 23, 0.035) 1px, transparent 1px);
-		background-size: 44px 44px;
-		mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.65), transparent 78%);
+		background:
+			linear-gradient(to bottom, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0)),
+			var(--texture-noise);
+		background-size:
+			auto,
+			180px 180px;
+		opacity: 0.36;
 	}
 
 	.yohaku-first-viewport::after {
@@ -299,9 +223,10 @@
 	}
 
 	:global(.dark) .yohaku-first-viewport::before {
-		background-image:
-			linear-gradient(rgba(245, 245, 244, 0.045) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(245, 245, 244, 0.045) 1px, transparent 1px);
+		background:
+			linear-gradient(to bottom, rgba(12, 10, 9, 0.52), rgba(12, 10, 9, 0)),
+			var(--texture-noise);
+		opacity: 0.18;
 	}
 
 	:global(.dark) .yohaku-first-viewport::after {

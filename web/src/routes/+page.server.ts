@@ -21,6 +21,7 @@ export const load: PageServerLoad = async (event) => {
 
 	trackISRDeps(
 		event,
+		'layout:website-info',
 		'home:recent-posts',
 		'home:recent-moments',
 		'home:activity-pulse',

@@ -3,6 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import Sidebar from '$lib/ui/layout/sidebar/Sidebar.svelte';
 	import MobileNavBar from '$lib/ui/layout/sidebar/MobileNavBar.svelte';
+	import YohakuTopNav from '$lib/ui/layout/YohakuTopNav.svelte';
 	import { initTheme, startThemeSync, themeManager } from '$lib/shared/theme/theme.svelte.js';
 	import { onMount } from 'svelte';
 	import { consoleLogInfo } from '$lib/features/console-info/index';
@@ -193,17 +194,20 @@
 	const currentWebsiteInfo = $derived.by(() => page.data.websiteInfo ?? $websiteInfoStore);
 	const homeTheme = $derived.by(() => resolveHomeThemeConfig(currentWebsiteInfo));
 	const isHomePage = $derived(page.url.pathname === '/' || page.url.pathname === '');
-	const useYohakuHome = $derived(isHomePage && homeTheme.firstViewport?.variant === 'yohaku');
-	const hideHomeDesktopSidebar = $derived(
-		useYohakuHome && homeTheme.firstViewport?.hideGlobalSidebarOnHome === true
-	);
-	const hideHomeMobileNav = $derived(
-		useYohakuHome && homeTheme.firstViewport?.hideGlobalMobileNavOnHome === true
-	);
-	const layoutPaddingClass = $derived(hideHomeDesktopSidebar ? '' : 'md:pl-24');
+	const useYohakuShell = $derived(homeTheme.firstViewport?.variant === 'yohaku');
+	const useYohakuHome = $derived(isHomePage && useYohakuShell);
+	const hideHomeDesktopSidebar = $derived(useYohakuShell);
+	const hideHomeMobileNav = $derived(useYohakuShell);
+	const layoutPaddingClass = $derived(useYohakuShell ? '' : 'md:pl-24');
 	const pageWrapperClass = $derived.by(() => {
-		if (useYohakuHome || page.url.pathname.startsWith('/timeline')) {
+		if (useYohakuHome) {
 			return 'max-w-none px-0 py-0';
+		}
+		if (page.url.pathname.startsWith('/timeline')) {
+			return useYohakuShell ? 'max-w-none px-0 pt-24 md:pt-28 pb-0' : 'max-w-none px-0 py-0';
+		}
+		if (useYohakuShell) {
+			return 'max-w-300 px-5 sm:px-6 lg:px-8 pt-24 md:pt-28 pb-12 md:pb-16';
 		}
 		return 'max-w-300 px-4 sm:px-6 lg:px-8 py-10 md:py-16';
 	});
@@ -230,6 +234,8 @@
 	};
 	const siteFavicon = $derived.by(() => normalizeIconUrl($websiteInfoStore?.favicon) || favicon);
 	const siteFaviconType = $derived.by(() => inferIconMimeType(siteFavicon));
+	const yohakuTopNavAvatar = $derived(homeTheme.hero?.avatarUrl || siteFavicon);
+	const yohakuSiteName = $derived(currentWebsiteInfo?.website_name || 'Blog');
 
 	// Clip favicon to circle via Canvas
 	let circularFaviconUrl = $state('');
@@ -422,6 +428,15 @@
 		})();
 	</script>
 </svelte:head>
+
+{#if useYohakuShell}
+	<YohakuTopNav
+		menuTree={data.navMenus ?? []}
+		avatarUrl={yohakuTopNavAvatar}
+		siteName={yohakuSiteName}
+		showNav={homeTheme.firstViewport?.showTopNav ?? true}
+	/>
+{/if}
 
 {#if !hideHomeDesktopSidebar}
 	<div class="hidden md:block">

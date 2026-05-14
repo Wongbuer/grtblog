@@ -72,6 +72,15 @@ const isDirty = computed(() => serializeForm(form) !== originalSnapshot.value)
 const isYohaku = computed(() => form.variant === 'yohaku')
 
 watch(isDirty, (dirty) => emit('dirty-change', dirty), { immediate: true })
+watch(
+  () => form.variant,
+  (variant) => {
+    if (variant !== 'yohaku') return
+    form.hideGlobalSidebarOnHome = true
+    form.hideGlobalMobileNavOnHome = true
+    form.showTopNav = true
+  },
+)
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -362,7 +371,7 @@ onMounted(fetchData)
     <template #header>
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div class="text-base font-semibold">首页首屏</div>
+          <div class="text-base font-semibold">首页首屏与 Yohaku 顶栏</div>
           <div class="text-xs text-neutral-500">写入 theme_extend_info.home.firstViewport</div>
         </div>
         <div class="flex items-center gap-2">
@@ -399,8 +408,8 @@ onMounted(fetchData)
           type="info"
           :show-icon="false"
         >
-          这里只控制首页首屏样式；头像、标题、描述、motto 和社交链接继续共用主题扩展里的 home.hero
-          配置。
+          选择 Yohaku 后会作为全站顶栏模式使用，并隐藏原有侧栏；头像、标题、描述、motto
+          和社交链接继续共用主题扩展里的 home.hero 配置。
         </NAlert>
 
         <div class="flex flex-wrap gap-2">
@@ -446,7 +455,7 @@ onMounted(fetchData)
             />
           </NFormItem>
 
-          <NFormItem label="显示首屏顶部导航">
+          <NFormItem label="显示 Yohaku 顶部导航">
             <NSwitch
               v-model:value="form.showTopNav"
               :disabled="!isYohaku"
